@@ -1,0 +1,68 @@
+"use client";
+
+import { calculateScore } from '../lib/logic/score';
+import { Task, PropFlowTask, LogicDeckTask } from '../lib/types';
+
+const DashboardPage = () => {
+  // PropFlowTask のサンプルデータ
+  const propFlowTaskSample: PropFlowTask = {
+    id: 'prop-1',
+    source: 'propflow',
+    title: 'PropFlowタスク: 新機能の承認依頼',
+    createdAt: new Date(),
+    status: 'pending',
+    // 3日後の日付をISO文字列で設定
+    deadline: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString(),
+    intensity: 80,
+    category: 'work',
+    layer: 'deadline',
+    metadata: {
+      approverIds: ['user-a', 'user-b'],
+      siteLocation: 'Tokyo Office',
+    },
+  };
+
+  // LogicDeckTask のサンプルデータ
+  const logicDeckTaskSample: LogicDeckTask = {
+    id: 'logic-1',
+    source: 'logicdeck',
+    title: 'LogicDeckタスク: 新しいJSライブラリの調査',
+    createdAt: new Date(),
+    status: 'pending',
+    // 7日後の日付をISO文字列で設定
+    deadline: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
+    metadata: {
+      logicId: 'logic-xyz-789',
+      priorityScore: 0, // スコアはこれから計算する
+      intensity: 60,
+      category: 'study',
+      layer: 'investment',
+    },
+  };
+
+  const tasks: Task[] = [propFlowTaskSample, logicDeckTaskSample];
+
+  return (
+    <main style={{ padding: '2rem' }}>
+      <h1>統合ダッシュボード (プロトタイプ)</h1>
+      <div style={{ marginTop: '1.5rem' }}>
+        <h2>タスク一覧</h2>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {tasks.map((task) => {
+            // 'normal' モードでスコアを計算
+            const score = calculateScore(task, 'normal');
+            return (
+              <li key={task.id} style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '1rem', marginBottom: '0.5rem' }}>
+                <p><strong>タスク名:</strong> {task.title}</p>
+                <p><strong>ソース:</strong> {task.source}</p>
+                <p><strong>計算スコア:</strong> <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#007bff' }}>{score}</span></p>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </main>
+  );
+};
+
+export default DashboardPage;

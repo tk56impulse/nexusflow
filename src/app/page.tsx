@@ -31,12 +31,12 @@ const DashboardPage = () => {
     status: 'pending',
     // 7日後の日付をISO文字列で設定
     deadline: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
+      category: 'study',
+      layer: 'investment',
+      intensity: 60,
     metadata: {
       logicId: 'logic-xyz-789',
       priorityScore: 0, // スコアはこれから計算する
-      intensity: 60,
-      category: 'study',
-      layer: 'investment',
     },
   };
 

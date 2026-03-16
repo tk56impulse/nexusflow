@@ -8,9 +8,24 @@ export interface BaseTask {
   createdAt: Date;
   status: 'pending' | 'completed';
   deadline?: string;
+  // どのアプリ由来でも共通でUIに表示するもの
+  category: Category;
+  layer: Layer;
+  intensity: number;
 }
 
-// PropFlow専用の型定義
+// アプリ固有のメタデータのみを分離
+export interface PropFlowMetadata {
+  approverIds: string[];
+  siteLocation: string;
+}
+
+export interface LogicDeckMetadata {
+  logicId: string;
+  priorityScore: number;
+}
+
+/* PropFlow専用の型定義
 export interface PropFlowTask extends BaseTask {
   source: 'propflow';
   intensity: number;
@@ -33,6 +48,18 @@ export interface LogicDeckTask extends BaseTask {
     layer: Layer;
   };
 }
+  */
 
-// これが「NexusFlow」の共通型！
+// 共通型を構成する
+export interface PropFlowTask extends BaseTask {
+  source: 'propflow';
+  metadata: PropFlowMetadata;
+}
+
+export interface LogicDeckTask extends BaseTask {
+  source: 'logicdeck';
+  metadata: LogicDeckMetadata;
+}
+
+// 「NexusFlow」の共通型
 export type Task = PropFlowTask | LogicDeckTask;

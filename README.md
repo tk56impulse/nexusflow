@@ -1,5 +1,5 @@
 # NexusFlow 
-3/13 ①
+## 作業ログ（3/13）
 ## プロジェクト概要
 
 NexusFlow は、既存の **PropFlow**（進捗管理システム）と **LogicDeck**（意思決定支援ツール）を統合し、単一のリポジトリへ移行するプロジェクトです。
@@ -41,3 +41,4 @@ NexusFlow は、既存の **PropFlow**（進捗管理システム）と **LogicD
   - `src/lib/logic/score.ts` へ並び替えロジック（`sortTasks`）を追加し、スコア計算との依存関係を集約。
   - 統合ダッシュボード (`src/app/page.tsx`) における、`PropFlow` および `LogicDeck` データの横断的なスコア計算・ソート表示を実装。
   - プロトタイプ画面による、タスク優先度の動的評価ロジックの動作確認が完了。
+  **設計ドキュメントの整備**: [architecture.md](./architecture.md) を作成し、全体構成とデータフロー図を可視化。

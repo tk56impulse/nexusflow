@@ -1,6 +1,6 @@
 "use client";
 
-import { calculateScore } from '../lib/logic/score';
+import { calculateScore, sortTasks } from '../lib/logic/score';
 import { Task, PropFlowTask, LogicDeckTask } from '../lib/types';
 
 const DashboardPage = () => {
@@ -42,13 +42,15 @@ const DashboardPage = () => {
 
   const tasks: Task[] = [propFlowTaskSample, logicDeckTaskSample];
 
+  const sortedTasks = sortTasks(tasks, 'normal');
+
   return (
     <main style={{ padding: '2rem' }}>
       <h1>統合ダッシュボード (プロトタイプ)</h1>
       <div style={{ marginTop: '1.5rem' }}>
-        <h2>タスク一覧</h2>
+        <h2>タスク一覧(スコア順)</h2>
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {tasks.map((task) => {
+          {sortedTasks.map((task) => {
             // 'normal' モードでスコアを計算
             const score = calculateScore(task, 'normal');
             return (

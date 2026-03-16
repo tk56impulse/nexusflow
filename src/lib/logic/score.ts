@@ -81,3 +81,10 @@ const calculateDeadlineBonus = (
   }
   return 0;
 };
+export const sortTasks = (tasks: Task[], mode: AppraisalMode = "normal"): Task[] => {
+  return [...tasks].sort((a, b) => {
+    const scoreA = calculateScore(a, mode);
+    const scoreB = calculateScore(b, mode);
+    return scoreB - scoreA;
+  });
+};

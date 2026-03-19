@@ -3,60 +3,51 @@ export type Layer = 'deadline' | 'investment' | 'desire';
 export type Category = 'work' | 'study' | 'private' | 'other';
 export type Language = 'ja' | 'en';
 
-export interface BaseTask {
-  id: string;
-  title: string;
-  description?: string;
-  createdAt: number;
-  status: 'pending' | 'completed';
-  deadline?: string;
-  category: Category;
-  layer: Layer;
-  intensity: number;
-}
-
-// アプリ固有のメタデータのみを分離
-export interface PropFlowMetadata {
-  approverIds: string[];
-  siteLocation: string;
-}
-
-export interface LogicDeckMetadata {
-  logicId?: string;
-  priorityScore: number;
-}
-
-//PropFlow専用の型定義
-export interface PropFlowTask extends BaseTask {
-  source: 'propflow';
-  metadata: PropFlowMetadata;
-}
-// LogicDeck専用の型定義
-export interface LogicDeckTask extends BaseTask {
-  source: 'logicdeck';
-  metadata: LogicDeckMetadata;
-}
-
-
-// 共通型を構成する
-export interface PropFlowTask extends BaseTask {
-  source: 'propflow';
-  metadata: PropFlowMetadata;
-}
-
-export interface LogicDeckTask extends BaseTask {
-  source: 'logicdeck';
-  metadata: LogicDeckMetadata;
-}
-
-// 「NexusFlow」の共通型
-export type Task = PropFlowTask | LogicDeckTask;
-
 export interface LayerInfo {
   label: Record<Language, string>;
   icon: string;
   color: string;
 }
+
+export interface BaseTask {
+  id: string;
+  title: string;
+  description?: string;
+  createdAt: number;
+  status: 'pending' | 'completed' | 'archived';
+  deadline?: string;
+  category: Category;
+  layer: Layer;
+  // intensity はアプリ固有（LogicDeck）なのでここからは削除
+}
+
+// 【PropFlow専用】不動産管理に必要なデータ
+export interface PropFlowMetadata {
+  approverIds: string[];
+  siteLocation: string;
+  subStatus: string; // 例: '内見予約', '契約準備中' など
+}
+
+// 【LogicDeck専用】ロジック計算に必要なデータ
+export interface LogicDeckMetadata {
+  logicId?: string;
+  priorityScore: number;
+  intensity: number; // 👈 ここ（メタデータ内）に移動
+  subStatus: 'draft' | 'calculated' | 'reviewed';
+}
+
+// 以下、結合部分は今のままで完璧です
+export interface PropFlowTask extends BaseTask {
+  source: 'propflow';
+  metadata: PropFlowMetadata;
+}
+
+export interface LogicDeckTask extends BaseTask {
+  source: 'logicdeck';
+  metadata: LogicDeckMetadata;
+}
+
+export type Task = PropFlowTask | LogicDeckTask;
 
 export const LAYER_MAP: Record<Layer, LayerInfo> = {
   deadline: {

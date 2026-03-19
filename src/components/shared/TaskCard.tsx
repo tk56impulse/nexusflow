@@ -1,5 +1,6 @@
-import { Task, Layer, Category,Language,LAYER_MAP } from "@/lib/types"; 
+import { Task, Layer, Category, Language, LAYER_MAP, LogicDeckTask, PropFlowTask } from "@/lib/types"; 
 import { calculateScore } from "@/lib/logic/score";
+
 
 interface TaskCardProps {
   task: Task;
@@ -8,7 +9,7 @@ interface TaskCardProps {
   onUpdate: (
     id: string,
     field: keyof Task,
-    value: string | number | Layer | Category,
+    value: Task[keyof Task]
   ) => void;
   onRemove: (id: string) => void;
 }
@@ -20,6 +21,9 @@ export default function TaskCard({
   onUpdate,
   onRemove,
 }: TaskCardProps) {
+const isLogicDeck = task.source === 'logicdeck';
+  const intensityValue = isLogicDeck ? (task as LogicDeckTask).metadata.intensity : 0;
+
   const totalScore = calculateScore(task);
   const layerInfo = LAYER_MAP[task.layer];
   // --- 1. スタイル定数の整理 ---
@@ -31,27 +35,11 @@ export default function TaskCard({
     inputSection: isDarkMode ? "rgba(15, 23, 42, 0.5)" : "#f8fafc",
     fieldBg: isDarkMode ? "#1e293b" : "#f1f5f9",
   };
-  const getScoreColor = (intensity: number, layer: Layer) => {
-    const info = LAYER_MAP[layer];
-    // 1. 本音(desire)は常に一定の色
-    if (layer === "desire") return info.color;
-
-    // 2. 共通：高強度（70以上）なら赤色（警告）にする
-    if (intensity >= 70) return "#ef4444";
-
-    // 3. 投資(investment)の色の変化
-    if (layer === "investment") {
-      if (intensity >= 50) return "#f59e0b";
-      return info.color;
-    }
-
-    // 4. 締切(deadline)の色の変化
-    if (layer === "deadline") {
-      if (intensity >= 30) return "#fbbf24";
-      return info.color;
-    }
-
-    return "#94a3b8";
+  const getScoreColor = (intensity: number) => {
+    // ネオンブルー・グレー基調の配色
+    if (intensity >= 80) return "#22d3ee"; // Cyan (High)
+    if (intensity >= 40) return "#38bdf8"; // Sky Blue (Medium)
+    return "#94a3b8"; // Slate (Low)
   };
 
   const cardStyle: React.CSSProperties = {
@@ -94,14 +82,12 @@ export default function TaskCard({
               padding: "4px 12px",
               fontSize: "10px",
               borderRadius: "4px",
-              backgroundColor:
-                task.category === cat
-                  ? "#38bdf8"
-                  : isDarkMode
-                    ? "#334155"
-                    : "#e2e8f0",
+              backgroundColor:task.category === cat ? "#38bdf8"
+                  : (isDarkMode ? "#334155": "#e2e8f0"),
               color: task.category === cat ? "#0f172a" : theme.subText,
               fontWeight: "bold",
+              cursor: "pointer",
+              border: "none",
             }}
           >
             {cat.toUpperCase()}
@@ -109,8 +95,7 @@ export default function TaskCard({
         ))}
       </nav>
       {/* 2. タイトル入力 & 削除ボタン */}
-      <header
-        style={{
+      <header style={{
           display: "flex",
           gap: 10,
           marginBottom: 20,
@@ -139,6 +124,7 @@ export default function TaskCard({
           ✕
         </button>
       </header>
+
       {/* 3. 戦略レイヤーボタン */}
       <section style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", gap: 8 }}>
@@ -168,20 +154,20 @@ export default function TaskCard({
         </div>
       </section>
       {/* 4. スライダーエリア */}
+      {isLogicDeck && (
       <section
         style={{
           display: "flex",
           flexDirection: "column",
           gap: "10px",
           backgroundColor: theme.inputSection,
-          padding: "20px",
+          padding: "16px 20px",
           borderRadius: "16px",
           border: `1px solid ${theme.border}`,
         }}
       >
-        <label
-          style={{
-            fontSize: "0.75rem",
+        <label style={{
+            fontSize: "0.7rem",
             fontWeight: "bold",
             color: theme.subText,
           }}
@@ -200,13 +186,13 @@ export default function TaskCard({
             </>
           )}
         </label>
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span
             style={{
               fontSize: "0.7rem",
               color: theme.subText,
               fontWeight: "bold",
-              opacity: 0.6,
+              width: "30px",
             }}
           >
             LOW
@@ -217,59 +203,50 @@ export default function TaskCard({
               min="0"
               max="100"
               className="custom-slider"
-              value={task.intensity}
-              onChange={(e) =>
-                onUpdate(task.id, "intensity", parseInt(e.target.value))
-              }
+              value={intensityValue}
+              onChange={(e) =>{
+              const val = parseInt(e.target.value);
+                  onUpdate(task.id, "metadata", {
+                    ...(task as LogicDeckTask).metadata,
+                    intensity: val
+                  });
+              }}
               style={{
                 WebkitAppearance: "none",
                 appearance: "none",
                 width: "100%",
                 height: "10px",
-                borderRadius: "5px",
+                borderRadius: "6px",
                 cursor: "pointer",
                 outline: "none",
-                margin: "10px 0",
+                margin: 0,
                 background: `linear-gradient(to right, 
-      ${getScoreColor(task.intensity, task.layer)} 0%, 
-      ${getScoreColor(task.intensity, task.layer)} ${task.intensity}%, 
-      ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e2e8f0"} ${task.intensity}%, 
+      ${getScoreColor(intensityValue)} 0%, 
+      ${getScoreColor(intensityValue)} ${intensityValue}%, 
+      ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e2e8f0"} ${intensityValue}%, 
       ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e2e8f0"} 100%)`,
               }}
             />
           </div>
-          <span
-            style={{
-              fontSize: "0.7rem",
-              color: getScoreColor(task.intensity, task.layer),
-              fontWeight: "bold",
-              letterSpacing: "0.1em",
-            }}
-          >
-            HIGH
-          </span>
           <div
             style={{
-              fontSize: "1.8rem",
-              minWidth: "40px",
-              textAlign: "center",
+              fontSize: "1.1rem",
+              color: getScoreColor(intensityValue),
+              fontWeight: "bold",
+              minWidth: "45px",
+              textAlign: "right",
+              fontFamily: "monospace",
+              textShadow: isDarkMode
+                ? `0 0 10px ${getScoreColor(intensityValue)}`
+                : "none",
+              transition: "color 0.3s",
             }}
           >
-            {task.intensity > 80 ? "🔥" : task.intensity > 40 ? "⚡" : "💤"}
+            {intensityValue}%
           </div>
         </div>
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: "0.65rem",
-            color: theme.subText,
-            fontWeight: "500",
-          }}
-        >
-          INTENSITY:{" "}
-          <span style={{ color: theme.text }}>{task.intensity}%</span>
-        </div>
       </section>
+      )}
       {/* 5. 期日・備考入力 */}
       <footer style={{ display: "flex", gap: 10, marginTop: 15 }}>
         <input

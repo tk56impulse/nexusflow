@@ -20,13 +20,14 @@ export default function TaskForm({ onAddTask }: Props) {
   title,
   category,
   layer,
-  intensity: 50,
   status: 'pending',
   source: 'logicdeck',
   // metadata を追加する
   metadata: {
     logicId: 'temp-id', // 必要に応じて生成してください、後で修正予定
     priorityScore: 0,
+    intensity: 50,         // 👈 初期値として 50% などを設定
+  subStatus: "draft",
   }
 });
     setTitle('');

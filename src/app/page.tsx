@@ -13,12 +13,12 @@ const DashboardPage = () => {
     status: 'pending',
     // 3日後の日付をISO文字列で設定
     deadline: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString(),
-    intensity: 80,
     category: 'work',
     layer: 'deadline',
     metadata: {
       approverIds: ['user-a', 'user-b'],
       siteLocation: 'Tokyo Office',
+      subStatus: '未着手',
     },
   };
 
@@ -33,10 +33,12 @@ const DashboardPage = () => {
     deadline: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
       category: 'study',
       layer: 'investment',
-      intensity: 60,
+      
     metadata: {
       logicId: 'logic-xyz-789',
-      priorityScore: 0, // スコアはこれから計算する
+      priorityScore: 0, 
+      intensity: 60,
+      subStatus: 'draft',
     },
   };
 

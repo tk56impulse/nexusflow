@@ -25,6 +25,20 @@ NexusFlow は、既存の **PropFlow**（進捗管理システム）と **LogicD
   - **Discriminated Union型による統合モデル**: 異なる特性を持つタスクデータを、判別可能なユニオン型としてモデル化し、堅牢な型安全性を確保。
   - **Type Guard Pattern**: ランタイムでのデータ検証とコンパイル時の型チェックを両立させる実装パターンを採用。
 
+## 🛠 技術設計 (Technical Design)
+
+### タスクデータ構造の統一
+本プロジェクトでは、複数のドメイン（不動産・ロジック）でタスクを扱うため、`BaseTask` を基点とした拡張可能な型定義を採用しています。
+
+- **BaseTask**: 全てのアプリで共通のプロパティ（title, category, layer等）
+- **Metadata**: 各アプリ固有の拡張データ（priorityScore, siteLocation等）
+- **Source**: データ元を判別するリテラル型 ('propflow' | 'logicdeck')
+
+### インポートルール
+ディレクトリ階層の深化に伴うパスの複雑化を防ぐため、以下のエイリアスを推奨します。
+- `@/lib/types`: 共通の型定義および定数（LAYER_MAP等）
+- `@/lib/logic`: 計算アルゴリズム関連
+
 ## 今後の展望
 
 1. **PropFlowロジックの完全移行**: 未実装の PropFlow 固有ロジック（承認フロー等）を `src/lib/logic` 配下へ移植。
@@ -42,3 +56,19 @@ NexusFlow は、既存の **PropFlow**（進捗管理システム）と **LogicD
   - 統合ダッシュボード (`src/app/page.tsx`) における、`PropFlow` および `LogicDeck` データの横断的なスコア計算・ソート表示を実装。
   - プロトタイプ画面による、タスク優先度の動的評価ロジックの動作確認が完了。
   **設計ドキュメントの整備**: [architecture.md](./architecture.md) を作成し、全体構成とデータフロー図を可視化。
+
+## 作業ログ（3/19）
+- **コアシステムのアーキテクチャ刷新**
+「NexusFlow」としての基盤を強固にするため、データ構造とディレクトリ戦略を大幅にリファクタリング。
+
+- **型定義の統合 (Unified Task System)**
+  - `PropFlow` と `LogicDeck` でバラバラだった Task 型を `src/lib/types.ts` に一本化。
+  - 共通プロパティ（`category`, `layer`, `intensity`）を `BaseTask` へ抽出し、アプリ固有データは `metadata` へ分離。
+  - `createdAt` を `Date` 型から `number` (timestamp) 型へ変更し、シリアライズ性能とソートの正確性を向上。
+- **インポートパスの標準化**
+  - `tsconfig.json` のパスエイリアス設定に基づき、`@/lib/types` 等の絶対パス参照へ完全移行。
+  - 相対パス地獄（`../../`）を解消し、コンポーネント移動に強い構造を実現。
+- **UIコンポーネントの汎用化準備**
+  - `TaskCard`, `TaskForm` の型エラーを解消し、どのドメインのタスクでも受け入れ可能な状態を整備。
+- **ビルド環境の正常化**
+  - 全ファイルにおいて TypeScript の型整合性を確認。`npm run build` の正常終了を確認済み。

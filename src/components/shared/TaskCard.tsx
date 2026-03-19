@@ -1,5 +1,5 @@
-import { Task, Layer, Category, LAYER_MAP, Language } from "../app/types/task";
-import { calculateScore } from "../lib/taskLogic";
+import { Task, Layer, Category,Language,LAYER_MAP } from "@/lib/types"; 
+import { calculateScore } from "@/lib/logic/score";
 
 interface TaskCardProps {
   task: Task;

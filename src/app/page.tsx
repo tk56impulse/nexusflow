@@ -9,7 +9,7 @@ const DashboardPage = () => {
     id: 'prop-1',
     source: 'propflow',
     title: 'PropFlowタスク: 新機能の承認依頼',
-    createdAt: new Date(),
+    createdAt: Date.now(),
     status: 'pending',
     // 3日後の日付をISO文字列で設定
     deadline: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString(),
@@ -27,7 +27,7 @@ const DashboardPage = () => {
     id: 'logic-1',
     source: 'logicdeck',
     title: 'LogicDeckタスク: 新しいJSライブラリの調査',
-    createdAt: new Date(),
+    createdAt: Date.now(),
     status: 'pending',
     // 7日後の日付をISO文字列で設定
     deadline: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),

@@ -1,6 +1,13 @@
 export type AppraisalMode = 'sweet' | 'normal' | 'spicy';
 export type Layer = 'deadline' | 'investment' | 'desire';
-export type Category = 'work' | 'study' | 'private' | 'other';
+export type Category = 'work' | 'study' | 'private' | 'other'
+  | 'critical'   // 漏水・火災等の緊急事態
+  | 'facility'   // 設備故障（インフラ）
+  | 'owner'      // オーナー対応（重要）
+  | 'legal'      // 契約・法務・重説
+  | 'claim'      // 入居者苦情・騒音
+  | 'routine'    // 事務処理・巡回
+  | 'noise';     // 感情的入電
 export type Language = 'ja' | 'en';
 
 export interface BaseTask {
@@ -12,10 +19,15 @@ export interface BaseTask {
   deadline?: string;
   category: Category;
   layer: Layer;
-  intensity: number;
+  intensity: number; // 既存：強度 (0-100)
+
+  // --- 【追加】分析・ポートフォリオ用の数値属性 ---
+  energyRequired: number;   // 消費エネルギー (0-100)
+  impactValue: number;      // 重要度・価値 (0-100)
+  estimatedMinutes: number; // 見積もり時間 (分)
 }
 
-// アプリ固有のメタデータのみを分離
+// アプリ固有のメタデータ
 export interface PropFlowMetadata {
   approverIds: string[];
   siteLocation: string;
@@ -26,24 +38,13 @@ export interface LogicDeckMetadata {
   priorityScore: number;
 }
 
-//PropFlow専用の型定義
+// PropFlow専用の型定義
 export interface PropFlowTask extends BaseTask {
   source: 'propflow';
   metadata: PropFlowMetadata;
 }
+
 // LogicDeck専用の型定義
-export interface LogicDeckTask extends BaseTask {
-  source: 'logicdeck';
-  metadata: LogicDeckMetadata;
-}
-
-
-// 共通型を構成する
-export interface PropFlowTask extends BaseTask {
-  source: 'propflow';
-  metadata: PropFlowMetadata;
-}
-
 export interface LogicDeckTask extends BaseTask {
   source: 'logicdeck';
   metadata: LogicDeckMetadata;

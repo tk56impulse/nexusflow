@@ -1,9 +1,6 @@
 import { Task, AppraisalMode, Category, Layer } from '../types';
 
-/* スコア計算に使用する定数定義
-   旧PropFlowのロジックをベースにしています。
-   将来的に調整が必要になった際、ここだけを見れば良い状態にします。
-*/
+/* スコア計算に使用する定数定義 */
 const SCORE_CONFIG = {
   CATEGORY_BONUS: {
     work: 20,
@@ -18,50 +15,57 @@ const SCORE_CONFIG = {
     spicy: { deadline: 2.0, investment: 1.2, desire: 0.5 },
   } as Record<AppraisalMode, Record<Layer, number>>,
 
-  PRIVATE_ADJUSTMENT: 0.85, // 現実主義補正（15%カット）
-  DEADLINE_BONUS_NEAR: { normal: 20, spicy: 40 },
+  // 3. 不動産モード専用：実務リスク加点（propflowタスクのみ適用）
+  // critical(+200)にすることで、他の要素がどうあれ最上位に固定される
+ ESTATE_RISK_TABLE: {
+    critical: 200, // 緊急事態（漏水等）
+    facility: 80,  // 設備故障
+    owner:    60,  // オーナー対応（重要）
+    legal:    40,  // 契約・法務
+    claim:    30,  // 入居者苦情
+    routine:  10,  // 事務処理
+    noise:    5,   // 感情的入電
+    none:     0
+  } as Record<string, number>,
+
+  PRIVATE_ADJUSTMENT: 0.85,  // 現実主義補正（15%カット）
+
   DEADLINE_BONUS_OVER: 50,
+  DEADLINE_BONUS_NEAR: { normal: 20, spicy: 40 },
 } as const;
+
 
 export const calculateScore = (
   task: Task,
   mode: AppraisalMode = "normal",
 ): number => {
-  switch (task.source) {
-    case 'logicdeck':
-    case 'propflow': {
-      // task.sourceに応じて、スコア計算の元となるデータを取得します。
-      // これにより、データソースによる構造の違いを吸収し、以降のロジックを共通化します。
-      const taskData: { intensity: number; category: Category; layer: Layer } =
-        task.source === 'logicdeck' ? task.metadata : (task as any);
+ // --- 1. 基礎データの抽出 ---
+  const { intensity, category, layer, source, deadline } = task;
 
-      // 1. ベーススコアの算出（強度 + カテゴリボーナス）
-      const categoryBonus = SCORE_CONFIG.CATEGORY_BONUS[taskData.category] ?? 0;
-      let score = taskData.intensity + categoryBonus;
+  // --- 2. 主観セクション（すべてのタスクに適用） ---
+  const multiplier = SCORE_CONFIG.LAYER_MULTIPLIERS[mode][layer];
+  const categoryBonus = SCORE_CONFIG.CATEGORY_BONUS[category] ?? 0;
+  
+  // 基本スコア = (重み + カテゴリ) × モード倍率
+  let score = (intensity + categoryBonus) * multiplier;
 
-      // 2. モードに応じたレイヤー倍率の適用
-      const multiplier = SCORE_CONFIG.LAYER_MULTIPLIERS[mode][taskData.layer];
-      score *= multiplier;
-
-      // 3. カテゴリ補正（現実主義補正）
-      // Sweetモード以外でPrivateタスクの場合に適用
-      if (mode !== "sweet" && taskData.category === "private") {
-        score *= SCORE_CONFIG.PRIVATE_ADJUSTMENT;
-      }
-
-      // 4. 期日ボーナスの計算 (deadlineはTaskの共通プロパティ)
-      if (task.deadline) {
-        score += calculateDeadlineBonus(task.deadline, mode);
-      }
-
-      return Math.round(score);
-    }
-    default: {
-      // 網羅性チェック: 将来新しいTask型が追加された場合にコンパイルエラーを発生させる
-      const exhaustiveCheck: never = task;
-      throw new Error(`Unknown task source: ${(exhaustiveCheck as any).source}`);
-    }
+  // プライベートタスクへの現実主義補正（甘口以外）
+  if (mode !== "sweet" && category === "private") {
+    score *= SCORE_CONFIG.PRIVATE_ADJUSTMENT;
   }
+
+  // --- 3. 客観・実務セクション（混同防止：不動産モードのみ） ---
+  if (source === 'propflow') {
+    // 不動産固有のカテゴリ（critical等）があれば、絶対値を加算して「神棚」に上げる
+    score += (SCORE_CONFIG.ESTATE_RISK_TABLE[category] || 0);
+  }
+
+  // --- 4. 共通の期限ボーナス ---
+  if (deadline) {
+    score += calculateDeadlineBonus(deadline, mode);
+  }
+
+  return Math.round(score);
 };
 
 const calculateDeadlineBonus = (
@@ -81,10 +85,43 @@ const calculateDeadlineBonus = (
   }
   return 0;
 };
+
 export const sortTasks = (tasks: Task[], mode: AppraisalMode = "normal"): Task[] => {
-  return [...tasks].sort((a, b) => {
-    const scoreA = calculateScore(a, mode);
-    const scoreB = calculateScore(b, mode);
-    return scoreB - scoreA;
+  return [...tasks].sort((a, b) => calculateScore(b, mode) - calculateScore(a, mode));
+};
+
+/**
+ * 【新設】全タスクの分析集計関数（Result画面用）
+ * 既存のロジックに影響を与えず、末尾に追加
+ */
+export const getTaskAnalytics = (tasks: Task[]) => {
+  const total = tasks.length;
+  if (total === 0) return null;
+
+  const stats = tasks.reduce((acc, task) => {
+  acc.layerDist[task.layer]++;
+    acc.energySum += task.energyRequired || 0;
+    acc.impactSum += task.impactValue || 0;
+    acc.minutesSum += task.estimatedMinutes || 0;
+    return acc;
+  }, {
+    layerDist: { deadline: 0, investment: 0, desire: 0 } as Record<Layer, number>,
+    energySum: 0,
+    impactSum: 0,
+    minutesSum: 0
   });
+
+  return {
+    distribution: {
+      deadline: (stats.layerDist.deadline / total) * 100,
+      investment: (stats.layerDist.investment / total) * 100,
+      desire: (stats.layerDist.desire / total) * 100
+    },
+    averages: {
+      energy: stats.energySum / total,
+      impact: stats.impactSum / total
+    },
+    totalTime: stats.minutesSum,
+    count: total
+  };
 };

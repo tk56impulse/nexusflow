@@ -10,6 +10,15 @@ export type Category = 'work' | 'study' | 'private' | 'other'
   | 'noise';     // 感情的入電
 export type Language = 'ja' | 'en';
 
+export interface RealEstateData {
+  propertyName: string;   // 物件名
+  roomNumber?: string;    // 号室
+  impact: number;         // 波及度 (1-10)
+  financialRisk: number;  // 収支リスク (1-10)
+  profitability: number;  // 利益貢献 (1-10)
+  mentalCost: number;     // 精神コスト (1-10)
+}
+
 export interface BaseTask {
   id: string;
   title: string;
@@ -25,6 +34,7 @@ export interface BaseTask {
   energyRequired: number;   // 消費エネルギー (0-100)
   impactValue: number;      // 重要度・価値 (0-100)
   estimatedMinutes: number; // 見積もり時間 (分)
+  actualMinutes?: number;    // 【追加】実績時間 (分) - PDCA分析用
 }
 
 // アプリ固有のメタデータ
@@ -36,6 +46,8 @@ export interface PropFlowMetadata {
 export interface LogicDeckMetadata {
   logicId?: string;
   priorityScore: number;
+  // --- 【統合】不動産ドメインデータをロジック検証に組み込む ---
+  domainData?: RealEstateData;
 }
 
 // PropFlow専用の型定義

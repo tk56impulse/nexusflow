@@ -115,3 +115,11 @@ NexusFlow は、既存の **PropFlow**（進捗管理システム）と **LogicD
 - [ロジック] score.ts における計算アルゴリズムの修正と最適化
 - [ドキュメント] architecture.md へのデータベースリレーション図（Entity Relationship Diagram）の追記
 - [課題] 次回は Firestore のセキュリティルールと、修正済みロジックの結合テストを実施
+
+## 作業ログ（03/27）
+- **[機能名]** RICEスコア（Reach/Confidence）の計算ロジック導入と、不動産実務リスク加点テーブルの整理
+- **[内容]** - `score.ts` において、ユーザー設定（Weights）に基づいた柔軟な優先度計算を実装
+    - カテゴリー（漏水・オーナー対応等）ごとの加点（200点など）を定数化
+    - 期限（Deadline）による指数関数的なブーストロジックの維持
+- **[課題]** - `src/lib/logic` や `components/logicdeck` など、古いプロジェクト名の残骸（亡霊）の削除と整理
+    - `UserDoc` への `weights`（重み設定）の保存とUI（スライダー）の実装

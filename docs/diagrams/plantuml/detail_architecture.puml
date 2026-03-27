@@ -1,0 +1,50 @@
+@startuml NexusFlow_Architecture
+' スタイルの設定
+skinparam backgroundColor #fdfdfd
+skinparam shadowing false
+skinparam componentStyle uml2
+
+' 外部ユーザー
+actor "ユーザー" as User #333
+
+' クライアント環境 (Next.js)
+package "Client (Next.js App)" as Client #f0f7ff {
+    
+    package "UI (画面レイヤー)" as UI #f0f7ff {
+        [ログイン/会員登録] as AuthUI #0052cc
+        [評価項目カスタマイズ] as SettingUI #0052cc
+        [タスク入力/スコア閲覧] as TaskUI #0052cc
+    }
+    
+    package "Logic (ロジック)" as Logic #fff0f5 {
+        [useAuth: 認証状態監視] as AuthLogic #d81b60
+        [算出エンジン] as Calc #d81b60
+    }
+}
+
+' クラウド環境 (Firebase)
+package "Cloud (Firebase)" as Cloud #f1f8e9 {
+    [Firebase Auth] as Auth #2e7d32
+    
+    database "Firestore (DB)" as DB {
+        [ユーザー定義ルール] as Rules
+        [タスク・実行ログ] as Tasks
+    }
+}
+
+' 接続・フロー
+User ===> UI : 操作
+
+' UIからロジックへ
+SettingUI --> Logic
+TaskUI --> Logic
+
+' 認証フロー
+AuthUI <==> Auth : 1. 認証リクエスト
+Auth ..> AuthLogic : 2. uid発行
+
+' データ同期フロー
+Logic ===> Rules : 3. 定義ルール取得
+Logic ===> Tasks : 4. タスク保存・同期
+
+@enduml

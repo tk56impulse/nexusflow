@@ -62,7 +62,9 @@ export default function NexusFlowPage() {
       category: "work",
       createdAt: Date.now(),
       status: 'pending',
-      metadata: { logicId: uuid(), priorityScore: 0 }
+      metadata: { logicId: uuid(), priorityScore: 0 },
+      reach: 1.0,      // 初期値は「自分のみ」
+      confidence: 100, // 初期値は「確信度100%」
     };
     setTasks(prev => [newTask, ...prev]);
   };

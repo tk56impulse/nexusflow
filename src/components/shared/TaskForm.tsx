@@ -16,16 +16,22 @@ export default function TaskForm({ onAddTask }: Props) {
     e.preventDefault();
     if (!title.trim()) return;
 
- onAddTask({
+onAddTask({
   title,
   category,
   layer,
   intensity: 50,
   status: 'pending',
   source: 'logicdeck',
-  // metadata を追加する
+  // --- ここから不足分を追加 ---
+  energyRequired: 3,     // 1~5などの数値
+  impactValue: 3,        // 影響度
+  estimatedMinutes: 30,  // 作業予定時間
+  reach: 1,              // 到達範囲
+  confidence: 1,         // 確信度
+  // -----------------------
   metadata: {
-    logicId: 'temp-id', // 必要に応じて生成してください、後で修正予定
+    logicId: 'temp-id',
     priorityScore: 0,
   }
 });

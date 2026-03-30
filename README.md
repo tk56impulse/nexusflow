@@ -134,3 +134,8 @@ NexusFlow は、既存の **PropFlow**（進捗管理システム）と **LogicD
   - 現在 Inline Style で記述している箇所を、プロジェクト標準の Tailwind CSS または CSS Modules へ段階的に移行し、コードをクリーンにする。
 - **[Firebase Authの統合]**
   - 現在の `localStorage` による簡易判定を、実際の Firebase Authentication サービスに置き換え、セキュアな認証フローを完成させる。
+
+  ## 作業ログ（03/30）
+- [設計] 汎用タスク管理フレームワークとしてのER図（User, UserConfig, Task）の策定完了
+- [ロジック] RICEとアイゼンハワーを統合した「3D優先順位判定アルゴリズム（XYZ軸）」の確定
+- [課題] 次回はメインPCにてGit競合解消後、Prismaを導入しSQLiteでのDB実装・マイグレーションを確認

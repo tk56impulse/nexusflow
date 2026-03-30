@@ -1,0 +1,46 @@
+erDiagram
+    USER ||--o{ TASK : "creates"
+    USER ||--|| USER_SETTING : "has"
+    TASK ||--o{ TASK_LOG : "records"
+
+    USER {
+        string id PK "Firebase/Supabase Auth ID"
+        string email
+        datetime created_at
+    }
+
+    USER_SETTING {
+        string id PK
+        string user_id FK
+        float rice_weight_reach
+        float rice_weight_impact
+        float rice_weight_confidence
+        float rice_weight_effort
+        string category_labels "JSON: {A: '重要', B: '急ぎ'...}"
+    }
+
+    TASK {
+        string id PK
+        string user_id FK
+        string title
+        string description
+        string status "todo / doing / done"
+        
+        float score_reach
+        float score_impact
+        float score_confidence
+        float score_effort
+        float final_score "Calculated"
+        
+        string property_id "Optional: 物件ID"
+        datetime deadline
+        datetime created_at
+        datetime updated_at
+    }
+
+    TASK_LOG {
+        string id PK
+        string task_id FK
+        string action "created / status_changed / scored"
+        datetime timestamp
+    }

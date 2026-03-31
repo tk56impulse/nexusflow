@@ -18,6 +18,55 @@ export default function RootPage() {
       router.push("/login");
     }
   }, [router]);
+  }, [tasks, isLoading]);
+/*
+  const sortedTasks = useMemo(() => {
+    return sortTasks(tasks, sortMode); 
+  }, [tasks, sortMode]);
+  */
+
+  // --- ハンドラー系（データの更新・追加・削除） ---
+  const addTask = () => {
+    const newTask: Task = {
+      id: uuid(),
+      source: 'logicdeck',
+      title: "",
+      description: "",
+      intensity: 50,
+      energyRequired: 50,
+      impactValue: 50,
+      estimatedMinutes: 30,
+      deadline: new Date().toISOString().split("T")[0],
+      layer: "investment",
+      category: "work",
+      createdAt: Date.now(),
+      status: 'pending',
+      metadata: { logicId: uuid(), priorityScore: 0 },
+      reach: 1.0,      // 初期値は「自分のみ」
+      confidence: 100, // 初期値は「確信度100%」
+    };
+    setTasks(prev => [newTask, ...prev]);
+  };
+
+  const updateTask = (id: string, field: string, value: any) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
+  };
+
+  const removeTask = (id: string) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  // 🎨 テーマ定義
+ // 5. デザイン用テーマ（ダークモード切り替え対応）
+  const theme = {
+    bg: isDarkMode ? "#0f172a" : "#f8fafc",
+    text: isDarkMode ? "#f8fafc" : "#0f172a",
+    accent: "#38bdf8",
+    border: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "#e2e8f0",
+  };
+
+  // ロード中は何も表示させない（またはLoading...と出す）ことでエラーを防ぐ
+  if (isLoading) return <div style={{ color: theme.text, padding: 40, textAlign: "center" }}>Initializing NexusFlow...</div>;
 
   return (
     <div style={{ 

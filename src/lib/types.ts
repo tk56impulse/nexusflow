@@ -10,6 +10,15 @@ export type Category = 'work' | 'study' | 'private' | 'other'
   | 'noise';     // 感情的入電
 export type Language = 'ja' | 'en';
 
+export interface RealEstateData {
+  propertyName: string;   // 物件名
+  roomNumber?: string;    // 号室
+  impact: number;         // 波及度 (1-10)
+  financialRisk: number;  // 収支リスク (1-10)
+  profitability: number;  // 利益貢献 (1-10)
+  mentalCost: number;     // 精神コスト (1-10)
+}
+
 export interface BaseTask {
   id: string;
   title: string;
@@ -20,11 +29,25 @@ export interface BaseTask {
   category: Category;
   layer: Layer;
   intensity: number; // 既存：強度 (0-100)
-
-  // --- 【追加】分析・ポートフォリオ用の数値属性 ---
   energyRequired: number;   // 消費エネルギー (0-100)
   impactValue: number;      // 重要度・価値 (0-100)
   estimatedMinutes: number; // 見積もり時間 (分)
+  reach: number;       // 影響範囲 (1.0 = 自分のみ, 2.0 = チーム, 5.0 = 物件全体 など)
+  confidence: number;  // 確信度 (0-100%)
+}
+
+export interface UserScoreWeights {
+  reachWeight: number;      // 影響範囲をどれくらい重視するか (0.0 - 2.0)
+  impactWeight: number;     // 重要度をどれくらい重視するか
+  mentalCostWeight: number; // 【不動産】精神コストをどれくらい避けるか
+  riskWeight: number;       // 【不動産】収支リスクをどれくらい重視するか
+}
+
+export interface User {
+  uid: string;
+  appraisalMode: AppraisalMode;
+  weights: UserScoreWeights; // ここにユーザー秘伝のタレ（設定）が入る
+  actualMinutes?: number;    // 【追加】実績時間 (分) - PDCA分析用
 }
 
 // アプリ固有のメタデータ
@@ -36,6 +59,8 @@ export interface PropFlowMetadata {
 export interface LogicDeckMetadata {
   logicId?: string;
   priorityScore: number;
+  // --- 【統合】不動産ドメインデータをロジック検証に組み込む ---
+  domainData?: RealEstateData;
 }
 
 // PropFlow専用の型定義

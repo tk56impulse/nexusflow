@@ -1,0 +1,79 @@
+@startuml NexusFlow_Professional_Design
+
+' --- スタイル設定：モダンな配色 ---
+skinparam linetype ortho
+skinparam shadowing false
+skinparam packageStyle frame
+hide circle
+
+' カラー定義
+!define USER_COLOR #E3F2FD
+!define TASK_BASE #FFF3E0
+!define PROP_COLOR #F1F8E9
+!define LOGIC_COLOR #F3E5F5
+
+' --- 1. ユーザー設定領域 ---
+package "User Profile" as UP USER_COLOR {
+    entity "Users" as users {
+        * id : UUID [PK]
+        --
+        name : String
+        **appraisal_mode** : Enum (sweet | normal | spicy)
+    }
+}
+
+' --- 2. タスクコア領域 ---
+package "Task Core (Common)" as TC TASK_BASE {
+    entity "BaseTask" as base {
+        * id : UUID [PK]
+        --
+        title : String
+        category : Category (Enum)
+        layer : Layer (MUST/SHOULD/WANT)
+        intensity : Int (0-100)
+        --
+        **[Analytics & PDCA]**
+        energyRequired : Int
+        impactValue : Int
+        estimatedMinutes : Int
+        actualMinutes : Int
+    }
+}
+
+' --- 3. ドメイン特化領域（ここを分けると図が映えます） ---
+package "Domain Specific Data" {
+    
+    entity "PropFlow Data" as prop PROP_COLOR {
+        source: 'propflow'
+        --
+        propertyName : String
+        roomNumber : String
+        **[RealEstateRisk]**
+        financialRisk : 1-10
+        profitability : 1-10
+        mentalCost : 1-10
+    }
+
+    entity "LogicDeck Data" as logic LOGIC_COLOR {
+        source: 'logicdeck'
+        --
+        logicId : UUID
+        **priorityScore** : Float
+    }
+}
+
+' --- 4. ロジック・計算エンジン（外部注釈） ---
+note right of base
+  **Score Engine (score.ts)**
+  1. Base = (intensity + categoryBonus) * multiplier
+  2. If 'propflow' -> Add EstateRiskTable score
+  3. Add DeadlineBonus
+  4. **[A] Next: Add RICE (Reach * Confidence)**
+end note
+
+' --- リレーションシップ ---
+users "1" --o{ base : "manages"
+base <|-- prop : "Extends (Inherit)"
+base <|-- logic : "Extends (Inherit)"
+
+@enduml

@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Task, Layer, Category } from "../../lib/types";
-import { calculateScore } from "../../lib/logic/score";
+import { Task, Layer, Category } from "@/lib/types";
+import { calculateScore } from "@/lib//score";
 
 interface TaskCardProps {
   task: Task;

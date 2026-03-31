@@ -1,0 +1,77 @@
+model User {
+  id        String   @id @default(cuid()) // Firebase/Supabase Auth ID
+  email     String   @unique
+  createdAt DateTime @default(now())
+  tasks     Task[]
+  setting   UserSetting?
+}
+
+model UserSetting {
+  id               String @id @default(cuid())
+  userId           String @unique
+  user             User   @relation(fields: [userId], references: [id])
+  
+  // アルゴリズムの重み付け（デフォルト1.0）
+  weightReach       Float  @default(1.0)
+  weightImpact      Float  @default(1.0)
+  weightConfidence  Float  @default(1.0)
+  weightEffort      Float  @default(1.0)
+  weightSeverity    Float  @default(1.0)
+
+  // 動的ラベル
+  labelReach        String @default("波及範囲")
+  labelImpact       String @default("インパクト")
+  labelConfidence   String @default("確信度")
+  labelEffort       String @default("工数")
+  labelSeverity     String @default("事態の重さ")
+  
+  // UI用（JSON化）
+  statusLabels      Json   @default("{\"todo\": \"未着手\", \"doing\": \"進行中\", \"done\": \"完了\"}")
+}
+
+enum TaskStatus {
+  todo
+  doing
+  done
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  title           String
+  description     String?
+  status          TaskStatus @default(todo)
+
+  // --- 生データ（ここが唯一の真実） ---
+  scoreReach      Float    @default(0)
+  scoreImpact     Float    @default(0)
+  scoreConfidence Float    @default(0)
+  scoreEffort     Float    @default(1)
+  scoreSeverity   Float    @default(0)
+
+  // --- 計算キャッシュ（任意・非信頼） ---
+  xScore          Float?   // Efficiency（キャッシュ）
+  yScore          Float?   // Value（キャッシュ）
+  zPriority       Float?   // Urgency（キャッシュ）
+
+  propertyId      String?  // 将来の拡張用
+
+  deadline        DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  logs            TaskLog[]
+}
+
+model TaskLog {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+
+  action    String
+  meta      Json?    // 変更内容の詳細（差分など）
+
+  timestamp DateTime @default(now())
+}

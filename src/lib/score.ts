@@ -1,4 +1,4 @@
-import { Task, AppraisalMode, Category, Layer } from '../types';
+import { Task, AppraisalMode, Category, Layer } from '@/lib/types';
 
 /* スコア計算に使用する定数定義 */
 const SCORE_CONFIG = {

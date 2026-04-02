@@ -2,15 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-<<<<<<< HEAD
 import { v4 as uuid } from "uuid";
 //import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { api } from "../lib/api";
 import TaskCard from "../components/shared/TaskCard"; // 画像の通りsharedを参照
 import { Task, Layer, Category, AppraisalMode } from "@/lib/types"; // 統合された型定義
 import { sortTasks } from "@/lib/score";
-=======
->>>>>>> main
 
 export default function RootPage() {
   const router = useRouter();

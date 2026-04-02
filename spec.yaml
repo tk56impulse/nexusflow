@@ -1,0 +1,98 @@
+meta:
+  document_name: "spec.yaml"
+  version: "1.0"
+  last_updated: "2026-04-02"
+  description: "AI制御と開発要件を統合した汎用仕様テンプレート"
+
+execution_control:
+  phase: "definition" # definition / implementation / refactor
+  allow_file_creation: false
+  allow_code_modification: false
+
+ai_protocol:
+  description: "AIの勝手な判断を封じ、ユーザー主導を維持する最重要セクション"
+  strict_rules:
+    - rule: "推論・憶測の禁止"
+      description: "記述がない仕様をAIが勝手に判断しない。不明点は必ず実装前に確認すること。"
+    - rule: "勝手な改修の禁止"
+      description: "機能追加、リファクタリング、ディレクトリ構成変更をAIの判断で行わない。"
+    - rule: "要件逸脱の指摘"
+      description: "ユーザーの指示が本定義書と矛盾する場合、即座に実行せず矛盾を確認すること。"
+    - rule: "定義書の同期"
+      description: "仕様変更時は、まず本ドキュメントを更新し、その後にコード修正を行うこと。"
+    - rule: "環境遵守"
+      description: "コマンド等は Windows (PowerShell/Cmd) 環境を前提とする。"
+
+project_overview:
+  name: "[プロジェクト名を入力]"
+  concept: "[一言でいうとどんなアプリか]"
+  problem_solved: "[解決したい課題]"
+  target_user: "[想定ユーザー]"
+
+tech_stack:
+  frontend: "[例：Next.js 14, TypeScript, Tailwind CSS]"
+  backend: "[例：Java 17, Spring Boot 3]"
+  database: "[例：MySQL / Prisma ORM]"
+  ui_library: "[例：shadcn/ui, Lucide React]"
+
+directory_structure:
+  policy: |
+    基本構造は本定義を基準とする。
+    AIは新規ファイルの作成を許可する。
+    既存ファイルの削除は原則禁止とする。
+    不要と判断したファイルは削除せず、old または archive ディレクトリへ移動すること。
+    またはコメントアウト等により内容を保持し、履歴を残すこと。
+  root_map: |
+    /src
+    ├── /app         # 画面（ルーティング）
+    ├── /components  # UI部品
+    ├── /features    # 業務ロジック（最重要）
+    ├── /lib         # 基盤設定
+    └── /hooks       # 汎用Hook
+  archive_policy:
+    enabled: true
+    archive_dir: "/src/old"
+    rule: "削除の代わりに移動して保存する"
+
+file_operations:
+  create:
+    allowed: true
+  move:
+    allowed: true
+  delete:
+    allowed: false
+    exception: "ユーザーが明示的に削除を指示した場合のみ許可"
+
+data_structure:
+  entities:
+    - name: "[例：Task]"
+      columns:
+        - name: "id"
+          type: "UUID"
+          description: "主キー"
+        - name: "priority_score"
+          type: "Float"
+          description: "算出された優先度"
+  relations:
+    - "[例：User (1) --- (*) Task]"
+
+requirements:
+  features:
+    - id: 1
+      name: "[例：タスク自動並び替え]"
+      detail: "計算スコアに基づき、一覧を降順で表示する"
+  excluded:
+    - "[後回しにする機能]"
+
+business_logic:
+  logic_name: "[例：優先度スコアリング]"
+  formula:
+    description: "計算の考え方を日本語で記述"
+    expression: "(Impact + Severity) / Effort * Urgency"
+  validation:
+    - "全ての入力値は1〜5の整数とする"
+    - "0除算が発生する場合はスコアを0とする"
+
+history:
+  - date: "2026-04-02"
+    content: "spec.yaml テンプレート v1.0 完成"

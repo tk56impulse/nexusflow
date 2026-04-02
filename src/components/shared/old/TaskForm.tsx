@@ -1,7 +1,7 @@
-"use client";
+/*"use client";
 
 import { useState } from 'react';
-import { Task, Category, Layer } from '@/lib/types';
+import { Task, Category, Layer } '@/lib/types/index';
 
 type Props = {
   onAddTask: (task: Omit<Task, 'id' | 'createdAt'>) => void;
@@ -47,9 +47,9 @@ onAddTask({
         style={{ width: '100%', padding: '10px', marginBottom: 10 }}
       />
       <div style={{ display: 'flex', gap: 10 }}>
-        {/* カテゴリ選択などは必要に応じてボタンで追加 */}
+        カテゴリ選択などは必要に応じてボタンで追加 
         <button type="submit">タスクを追加</button>
       </div>
     </form>
   );
-}
+*/

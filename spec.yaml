@@ -1,53 +1,59 @@
 meta:
   document_name: "spec.yaml"
-  version: "1.0"
+  project_name: "NexusFlow"
+  version: "1.1"
   last_updated: "2026-04-02"
-  description: "AI制御と開発要件を統合した汎用仕様テンプレート"
+  description: "AI制御と開発要件を統合したワークフロー管理システム"
 
 execution_control:
-  phase: "definition" # definition / implementation / refactor
+  phase: "definition"
   allow_file_creation: false
   allow_code_modification: false
 
 ai_protocol:
-  description: "AIの勝手な判断を封じ、ユーザー主導を維持する最重要セクション"
+  description: "AIの挙動制御ルール"
   strict_rules:
     - rule: "推論・憶測の禁止"
-      description: "記述がない仕様をAIが勝手に判断しない。不明点は必ず実装前に確認すること。"
+      description: "spec.yamlに記載のない仕様を勝手に補完しない。不明点は必ず確認すること。"
     - rule: "勝手な改修の禁止"
-      description: "機能追加、リファクタリング、ディレクトリ構成変更をAIの判断で行わない。"
+      description: "設計・構造・ロジックの変更は必ず確認する"
     - rule: "要件逸脱の指摘"
-      description: "ユーザーの指示が本定義書と矛盾する場合、即座に実行せず矛盾を確認すること。"
+      description: "指示が本定義書と矛盾する場合は実行せず確認すること"
     - rule: "定義書の同期"
-      description: "仕様変更時は、まず本ドキュメントを更新し、その後にコード修正を行うこと。"
+      description: "変更は spec.yaml → 実装 の順で行う"
     - rule: "環境遵守"
-      description: "コマンド等は Windows (PowerShell/Cmd) 環境を前提とする。"
+      description: "Windows (PowerShell/Cmd) を前提とし、必要に応じてGit Bashを使用する"
 
 project_overview:
-  name: "[プロジェクト名を入力]"
-  concept: "[一言でいうとどんなアプリか]"
-  problem_solved: "[解決したい課題]"
-  target_user: "[想定ユーザー]"
+  name: "NexusFlow"
+  concept: "実行と意思決定を統合したタスク管理システム"
+  problem_solved:
+    - "タスク管理と意思決定ロジックの分断"
+    - "優先順位決定の属人化"
+  target_user:
+    - "日々のタスク整理に課題を感じている人"
+    - "複雑な優先順位判断を必要とする業務従事者"
 
 tech_stack:
-  frontend: "[例：Next.js 14, TypeScript, Tailwind CSS]"
-  backend: "[例：Java 17, Spring Boot 3]"
-  database: "[例：MySQL / Prisma ORM]"
-  ui_library: "[例：shadcn/ui, Lucide React]"
+  frontend: "Next.js (App Router), TypeScript"
+  backend: "[TBD: Java / API統合予定]"
+  database: "[TBD: Prisma + SQLite → 外部DBへ拡張予定]"
+  ui_library: "Tailwind CSS（段階的適用）"
 
 directory_structure:
   policy: |
-    基本構造は本定義を基準とする。
-    AIは新規ファイルの作成を許可する。
-    既存ファイルの削除は原則禁止とする。
-    不要と判断したファイルは削除せず、old または archive ディレクトリへ移動すること。
-    またはコメントアウト等により内容を保持し、履歴を残すこと。
+    本構造を基準とする。
+    新規ファイルの作成は許可する。
+    既存ファイルの削除は原則禁止とし、oldディレクトリへ退避すること。
+    またはコメントアウト等により履歴を保持すること。
   root_map: |
     /src
-    ├── /app         # 画面（ルーティング）
-    ├── /components  # UI部品
-    ├── /features    # 業務ロジック（最重要）
-    ├── /lib         # 基盤設定
+    ├── /app         # 画面（Next.js App Router）
+    ├── /components  # UIコンポーネント
+    ├── /features    # 業務ロジック（将来的に集約）
+    ├── /lib
+    │   ├── /types   # 型定義
+    │   └── /logic   # ビジネスロジック（スコア計算等）
     └── /hooks       # 汎用Hook
   archive_policy:
     enabled: true
@@ -61,38 +67,66 @@ file_operations:
     allowed: true
   delete:
     allowed: false
-    exception: "ユーザーが明示的に削除を指示した場合のみ許可"
+    exception: "ユーザーが明示的に許可した場合のみ"
 
 data_structure:
   entities:
-    - name: "[例：Task]"
+    - name: "Task"
+      description: "統合タスクモデル"
+      structure:
+        type: "Discriminated Union"
+        discriminator: "source"
       columns:
         - name: "id"
-          type: "UUID"
-          description: "主キー"
+          type: "string"
+        - name: "title"
+          type: "string"
+        - name: "category"
+          type: "string"
+        - name: "layer"
+          type: "string"
+        - name: "intensity"
+          type: "number"
+        - name: "createdAt"
+          type: "number"
+        - name: "metadata"
+          type: "object"
         - name: "priority_score"
-          type: "Float"
+          type: "number"
           description: "算出された優先度"
-  relations:
-    - "[例：User (1) --- (*) Task]"
+  relations: []
 
 requirements:
   features:
     - id: 1
-      name: "[例：タスク自動並び替え]"
-      detail: "計算スコアに基づき、一覧を降順で表示する"
+      name: "タスク入力（Editor）"
+      detail: "入力順で安定表示し、評価処理と分離する"
+    - id: 2
+      name: "スコアリング評価（Result）"
+      detail: "計算ロジックに基づき優先順位を算出しランキング表示"
+    - id: 3
+      name: "タスク統合管理"
+      detail: "単一モデルでタスクを一元管理する"
   excluded:
-    - "[後回しにする機能]"
+    - "通知機能"
+    - "リアルタイム同期"
+    - "高度な認証（現状は簡易セッション）"
 
 business_logic:
-  logic_name: "[例：優先度スコアリング]"
+  logic_name: "優先度スコアリングエンジン"
+  architecture:
+    separation: "UIから分離された純粋関数として実装"
   formula:
-    description: "計算の考え方を日本語で記述"
-    expression: "(Impact + Severity) / Effort * Urgency"
+    description: "複数指標による優先度の動的算出"
+    base_model: "(Impact + Financial + Profit + Burnout) / Effort"
+    extensions:
+      - "RICE（Reach, Confidence）による補正"
+      - "期限による指数関数的ブースト"
+      - "カテゴリ別加点"
   validation:
-    - "全ての入力値は1〜5の整数とする"
-    - "0除算が発生する場合はスコアを0とする"
+    - "入力値は定義された範囲内であること"
+    - "Effortは0不可"
 
 history:
   - date: "2026-04-02"
-    content: "spec.yaml テンプレート v1.0 完成"
+    content: "不要なドメイン依存表現を排除し、仕様を抽象化"

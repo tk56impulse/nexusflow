@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { Task, Layer, Category } from "@/lib/types";
-import { calculateScore } from "@/lib//score";
+import { Task, Category } from "@/lib/types/task";
 
 interface TaskCardProps {
   task: Task;
@@ -17,32 +16,18 @@ export default function TaskCard({
   onUpdate, 
   onRemove 
 }: TaskCardProps) {
-  // 統合版ロジックで計算（"normal" モードを基準に表示）
-  const totalScore = calculateScore(task, "normal");
+  // zPriority が 1.0 以下の場合は至急
+  const isUrgent = task.zPriority <= 1.0;
 
   const theme = {
     cardBg: isDarkMode ? "rgba(30, 41, 59, 0.7)" : "#ffffff",
     text: isDarkMode ? "#f8fafc" : "#0f172a",
     subText: isDarkMode ? "#94a3b8" : "#64748b",
-    border: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "#e2e8f0",
+    border: isUrgent ? "#ef4444" : (isDarkMode ? "rgba(255, 255, 255, 0.1)" : "#e2e8f0"),
     inputSection: isDarkMode ? "rgba(15, 23, 42, 0.5)" : "#f8fafc",
     fieldBg: isDarkMode ? "#1e293b" : "#f1f5f9",
     accent: "#38bdf8",
-  };
-
-  const getScoreColor = (value: number, layer: string) => {
-    if (layer === "desire") return "#10b981";
-    if (layer === "investment") {
-      if (value >= 80) return "#ef4444";
-      if (value >= 50) return "#f59e0b";
-      return "#3b82f6";
-    }
-    if (layer === "deadline") {
-      if (value >= 65) return "#ef4444";
-      if (value >= 30) return "#fbbf24";
-      return "#22c55e";
-    }
-    return "#94a3b8";
+    urgent: "#ef4444",
   };
 
   // 共通のスライダースタイル生成
@@ -68,7 +53,7 @@ export default function TaskCard({
         padding: "24px",
         borderRadius: "20px",
         backgroundColor: theme.cardBg,
-        border: `1px solid ${theme.border}`,
+        border: `${isUrgent ? '2px' : '1px'} solid ${theme.border}`,
         color: theme.text,
         backdropFilter: isDarkMode ? "blur(12px)" : "none",
         boxShadow: isDarkMode
@@ -90,6 +75,9 @@ export default function TaskCard({
       }}
     >
       <div style={{ textAlign: "right", marginBottom: -10 }}>
+        {isUrgent && (
+          <span style={{ fontSize: "10px", backgroundColor: theme.urgent, color: "#fff", padding: "2px 8px", borderRadius: "10px", fontWeight: "bold", marginRight: "8px" }}>URGENT</span>
+        )}
         <span style={{ fontSize: "9px", color: theme.accent, fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.8 }}>
           Source: {task.source}
         </span>
@@ -160,10 +148,10 @@ export default function TaskCard({
             outline: "none",
           }}
         />
-        <div style={{ textAlign: "right", minWidth: "60px" }}>
-          <div style={{ fontSize: "0.6rem", color: theme.subText }}>SCORE</div>
-          <div style={{ fontSize: "1.6rem", fontWeight: "900", color: theme.accent }}>
-            {isNaN(totalScore) ? "---" : totalScore}
+        <div style={{ textAlign: "right", minWidth: "80px" }}>
+          <div style={{ fontSize: "0.6rem", color: theme.subText }}>Z-PRIORITY</div>
+          <div style={{ fontSize: "1.6rem", fontWeight: "900", color: isUrgent ? theme.urgent : theme.accent }}>
+            {task.zPriority?.toFixed(1) || "---"}
           </div>
         </div>
         <button
@@ -176,33 +164,15 @@ export default function TaskCard({
         </button>
       </header>
 
-      <section style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", gap: 8 }}>
-          {[
-            { id: "deadline", label: "🚨 絶対", color: "#ef4444" },
-            { id: "investment", label: "🌱 投資", color: "#3b82f6" },
-            { id: "desire", label: "🎁 本音", color: "#22c55e" },
-          ].map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => onUpdate(task.id, "layer", l.id as Layer)}
-              style={{
-                flex: 1,
-                fontSize: "11px",
-                padding: "10px 0",
-                borderRadius: "8px",
-                border: `1px solid ${task.layer === l.id ? l.color : theme.border}`,
-                backgroundColor: task.layer === l.id ? l.color : "transparent",
-                color: task.layer === l.id ? "#fff" : theme.subText,
-                fontWeight: "bold",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-            >
-              {l.label}
-            </button>
-          ))}
+      {/* X & Y スコア表示セクション */}
+      <section style={{ display: "flex", gap: 15, marginBottom: 20 }}>
+        <div style={{ flex: 1, backgroundColor: theme.fieldBg, padding: "10px", borderRadius: "12px", textAlign: "center" }}>
+          <div style={{ fontSize: "0.6rem", color: theme.subText }}>Efficiency (X)</div>
+          <div style={{ fontWeight: "bold" }}>{task.xScore?.toFixed(2)}</div>
+        </div>
+        <div style={{ flex: 1, backgroundColor: theme.fieldBg, padding: "10px", borderRadius: "12px", textAlign: "center" }}>
+          <div style={{ fontSize: "0.6rem", color: theme.subText }}>Value (Y)</div>
+          <div style={{ fontWeight: "bold" }}>{task.yScore?.toFixed(2)}</div>
         </div>
       </section>
 
@@ -213,76 +183,71 @@ export default function TaskCard({
           borderRadius: "16px",
           border: `1px solid ${theme.border}`,
       }}>
-        {/* INTENSITY スライダー (既存) */}
-<div style={{ marginBottom: "15px" }}>
-  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-    <label style={{ fontSize: "0.65rem", fontWeight: "bold", color: theme.subText, letterSpacing: "0.05em" }}>
-      WEIGHT <span style={{ fontWeight: "normal", opacity: 0.6 }}>(0-100)</span>
-    </label>
-    <span style={{ fontSize: "0.75rem", color: theme.accent, fontWeight: "900" }}>{task.intensity}</span>
-  </div>
-  <input
-    type="range" min="0" max="100"
-    value={task.intensity}
-    onChange={(e) => onUpdate(task.id, "intensity", parseInt(e.target.value))}
-    style={getSliderStyle(task.intensity, getScoreColor(task.intensity, task.layer))}
-  />
-  {/* 補助テキスト：何に対しての重みかを薄く表示 */}
-  <p style={{ fontSize: "8px", color: theme.subText, marginTop: "4px", opacity: 0.7 }}>
-    {task.source === "propflow" 
-      ? "※実務リスク加算前のベース負荷を設定" 
-      : `※現在の${task.layer === "deadline" ? "緊急度" : "重要度"}の重み`}
-  </p>
-</div>
-
-        {/* ENERGY & IMPACT 並列スライダー */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "15px" }}>
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-              <label style={{ fontSize: "0.65rem", fontWeight: "bold", color: theme.subText }}>ENERGY</label>
-              <span style={{ fontSize: "0.65rem", color: theme.text }}>{task.energyRequired}%</span>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+          {/* R: Reach */}
+          <div style={{ marginBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <label style={{ fontSize: "0.6rem", fontWeight: "bold", color: theme.subText }}>REACH</label>
+              <span style={{ fontSize: "0.6rem" }}>{task.scoreReach}</span>
             </div>
             <input
-              type="range" min="0" max="100"
-              value={task.energyRequired}
-              onChange={(e) => onUpdate(task.id, "energyRequired", parseInt(e.target.value))}
-              style={getSliderStyle(task.energyRequired, "#fb923c")}
+              type="range" min="0.1" max="10" step="0.1"
+              value={task.scoreReach}
+              onChange={(e) => onUpdate(task.id, "scoreReach", parseFloat(e.target.value))}
+              style={getSliderStyle(task.scoreReach * 10, theme.accent)}
             />
           </div>
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-              <label style={{ fontSize: "0.65rem", fontWeight: "bold", color: theme.subText }}>IMPACT</label>
-              <span style={{ fontSize: "0.65rem", color: theme.text }}>{task.impactValue}%</span>
+          {/* I: Impact */}
+          <div style={{ marginBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <label style={{ fontSize: "0.6rem", fontWeight: "bold", color: theme.subText }}>IMPACT</label>
+              <span style={{ fontSize: "0.6rem" }}>{task.scoreImpact}</span>
             </div>
             <input
               type="range" min="0" max="100"
-              value={task.impactValue}
-              onChange={(e) => onUpdate(task.id, "impactValue", parseInt(e.target.value))}
-              style={getSliderStyle(task.impactValue, "#818cf8")}
+              value={task.scoreImpact}
+              onChange={(e) => onUpdate(task.id, "scoreImpact", parseInt(e.target.value))}
+              style={getSliderStyle(task.scoreImpact, "#818cf8")}
+            />
+          </div>
+          {/* C: Confidence */}
+          <div style={{ marginBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <label style={{ fontSize: "0.6rem", fontWeight: "bold", color: theme.subText }}>CONFIDENCE</label>
+              <span style={{ fontSize: "0.6rem" }}>{task.scoreConfidence}%</span>
+            </div>
+            <input
+              type="range" min="0" max="100"
+              value={task.scoreConfidence}
+              onChange={(e) => onUpdate(task.id, "scoreConfidence", parseInt(e.target.value))}
+              style={getSliderStyle(task.scoreConfidence, "#10b981")}
+            />
+          </div>
+          {/* E: Effort */}
+          <div style={{ marginBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <label style={{ fontSize: "0.6rem", fontWeight: "bold", color: theme.subText }}>EFFORT</label>
+              <span style={{ fontSize: "0.6rem" }}>{task.scoreEffort}</span>
+            </div>
+            <input
+              type="range" min="1" max="100"
+              value={task.scoreEffort}
+              onChange={(e) => onUpdate(task.id, "scoreEffort", parseInt(e.target.value))}
+              style={getSliderStyle(task.scoreEffort, "#fb923c")}
             />
           </div>
         </div>
-
-        {/* TIME (見積もり時間) */}
-        <div>
-          <label style={{ fontSize: "0.65rem", fontWeight: "bold", color: theme.subText, display: "block", marginBottom: "8px" }}>
-            ESTIMATED TIME (MINUTES)
-          </label>
+        {/* S: Severity (重要度・事態の重さ) */}
+        <div style={{ marginTop: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <label style={{ fontSize: "0.6rem", fontWeight: "bold", color: theme.subText }}>SEVERITY (0-10)</label>
+            <span style={{ fontSize: "0.6rem", color: theme.urgent }}>{task.scoreSeverity}</span>
+          </div>
           <input
-            type="number"
-            min="0"
-            value={task.estimatedMinutes}
-            onChange={(e) => onUpdate(task.id, "estimatedMinutes", parseInt(e.target.value) || 0)}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              fontSize: "0.85rem",
-              backgroundColor: theme.fieldBg,
-              border: `1px solid ${theme.border}`,
-              borderRadius: "8px",
-              color: theme.text,
-              outline: "none",
-            }}
+            type="range" min="0" max="10" step="1"
+            value={task.scoreSeverity}
+            onChange={(e) => onUpdate(task.id, "scoreSeverity", parseInt(e.target.value))}
+            style={getSliderStyle(task.scoreSeverity * 10, theme.urgent)}
           />
         </div>
       </section>

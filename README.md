@@ -103,3 +103,8 @@
 - **厳密な仕様**: [docs/spec.yaml](docs/spec.yaml)
 - **開発ログ**: [docs/dev-log.md](docs/dev-log.md)
 - **設計図**: `docs/diagrams/`
+
+---
+
+## 🔗 関連プロジェクト
+- LogicDeck（前身アプリ）

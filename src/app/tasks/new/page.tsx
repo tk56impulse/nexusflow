@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { v4 as uuid } from "uuid";
 //import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { api } from "@/lib/api";
-import TaskCard from "@/components/shared/TaskCard"; // 画像の通りsharedを参照
+import TaskCard from "@/components/features/task/TaskCard"; // 画像の通りsharedを参照
 import { Task, Layer, Category, AppraisalMode } from "@/lib/types"; // 統合された型定義
-import { sortTasks } from "@/lib/logic/score";
+import { sortTasks } from "@/lib/score";
 
 export default function NexusFlowPage() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 # NexusFlow
 
 ## 📸 画面イメージ
-（後でスクリーンショットを追加予定）
+![dashboard](screenshot1.png)
 
 ## 🚀 このアプリでできること
 

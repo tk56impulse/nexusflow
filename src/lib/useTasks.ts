@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Task } from '@/lib/types'; // @lib/types/index.ts を参照
-import { getTasks, createTask } from '@lib/api/tasks';
+import { getTasks, createTask } from '@/lib/api/tasks';
 
 /*
  * タスク一覧の取得・追加を管理するカスタムフック
